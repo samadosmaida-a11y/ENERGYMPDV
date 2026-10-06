@@ -67,9 +67,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      await db.initDB();
-      await refresh();
-      setLoading(false);
+      try {
+        await db.initDB();
+        await refresh();
+      } catch {
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [refresh]);
 
