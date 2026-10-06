@@ -1,0 +1,20 @@
+# NutriShop - Comment utiliser l'application hors ligne
+
+## Installation
+
+Aucune installation n'est nécessaire sur Windows. PowerShell est déjà inclus dans Windows.
+
+## Démarrer l'application
+
+1. Double-cliquez sur le fichier **Démarrer_NutriShop.bat**
+2. L'application s'ouvre automatiquement dans votre navigateur
+3. Laissez la fenêtre noire ouverte pendant l'utilisation
+4. Pour fermer l'application : fermez la fenêtre noire ou appuyez sur Ctrl+C
+
+## Important
+
+- Ne supprimez pas le dossier **dist** — il contient l'application
+- Vos données sont sauvegardées dans le navigateur. Si vous videz les données
+  de navigation, vos produits, ventes et clients seront perdus.
+- Utilisez toujours le fichier **Démarrer_NutriShop.bat** pour lancer l'application.
+  N'ouvrez pas index.html directement — cela ne fonctionne pas.
