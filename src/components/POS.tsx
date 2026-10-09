@@ -89,10 +89,10 @@ export function POS() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center animate-scale-in">
-          <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-10 h-10 text-emerald-600" />
+          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'var(--c-100)' }}>
+            <CheckCircle className="w-10 h-10" style={{ color: 'var(--c-600)' }} />
           </div>
-          <p className="text-lg font-semibold text-slate-800">{t.pos.saleSuccess}</p>
+          <p className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>{t.pos.saleSuccess}</p>
         </div>
       </div>
     );
@@ -100,23 +100,26 @@ export function POS() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-slate-800">{t.pos.title}</h1>
+      <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{t.pos.title}</h1>
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Products grid */}
         <div className="lg:col-span-2 space-y-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t.pos.search}
-              className="w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+              className="w-full pl-10 pr-3 py-2.5 border rounded-lg text-sm focus:outline-none"
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--c-500)'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
             />
           </div>
 
           {filtered.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-200">
+            <div className="rounded-2xl border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
               <EmptyState icon={<ShoppingCart className="w-12 h-12" />} title={t.products.noProducts} />
             </div>
           ) : (
@@ -128,20 +131,23 @@ export function POS() {
                     key={p.id}
                     onClick={() => addToCart(p.id)}
                     disabled={out}
-                    className={`bg-white rounded-xl border border-slate-200 p-4 text-left transition-all hover:border-emerald-300 hover:shadow-md ${out ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                    className={`rounded-xl border p-4 text-left transition-all hover:shadow-md ${out ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                    style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--c-300)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <div className="w-9 h-9 bg-emerald-50 rounded-lg flex items-center justify-center text-lg">
+                      <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg" style={{ backgroundColor: 'var(--c-50)' }}>
                         {p.name.charAt(0).toUpperCase()}
                       </div>
                       {out ? (
-                        <span className="text-xs text-red-500 font-medium">{t.pos.outOfStockProducts}</span>
+                        <span className="text-xs font-medium" style={{ color: '#ef4444' }}>{t.pos.outOfStockProducts}</span>
                       ) : (
-                        <span className="text-xs text-slate-400">{p.stock} {t.pos.inStock}</span>
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{p.stock} {t.pos.inStock}</span>
                       )}
                     </div>
-                    <p className="text-sm font-medium text-slate-800 leading-tight line-clamp-2">{p.name}</p>
-                    <p className="text-sm font-bold text-emerald-600 mt-1">{p.price.toFixed(2)} {settings.currency}</p>
+                    <p className="text-sm font-medium leading-tight line-clamp-2" style={{ color: 'var(--text-primary)' }}>{p.name}</p>
+                    <p className="text-sm font-bold mt-1" style={{ color: 'var(--c-600)' }}>{p.price.toFixed(2)} {settings.currency}</p>
                   </button>
                 );
               })}
@@ -151,14 +157,14 @@ export function POS() {
 
         {/* Cart */}
         <div className="lg:sticky lg:top-0 lg:self-start">
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-              <h2 className="font-bold text-slate-800 flex items-center gap-2">
-                <ShoppingCart className="w-5 h-5 text-emerald-600" />
+          <div className="rounded-2xl border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
+              <h2 className="font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                <ShoppingCart className="w-5 h-5" style={{ color: 'var(--c-600)' }} />
                 {t.pos.cart}
               </h2>
               {cart.length > 0 && (
-                <button onClick={clearCart} className="text-xs text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1">
+                <button onClick={clearCart} className="text-xs transition-colors flex items-center gap-1" style={{ color: 'var(--text-muted)' }} onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; }} onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}>
                   <X className="w-3.5 h-3.5" /> {t.pos.clear}
                 </button>
               )}
@@ -166,42 +172,45 @@ export function POS() {
 
             {cart.length === 0 ? (
               <div className="py-12 text-center">
-                <ShoppingCart className="w-10 h-10 text-slate-200 mx-auto mb-3" />
-                <p className="text-sm font-medium text-slate-500">{t.pos.empty}</p>
-                <p className="text-xs text-slate-400 mt-1">{t.pos.emptyMsg}</p>
+                <ShoppingCart className="w-10 h-10 mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+                <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{t.pos.empty}</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{t.pos.emptyMsg}</p>
               </div>
             ) : (
               <>
-                <div className="max-h-[300px] overflow-y-auto divide-y divide-slate-50">
+                <div className="max-h-[300px] overflow-y-auto">
                   {cart.map((item) => (
-                    <div key={item.product_id} className="flex items-center gap-2 px-4 py-3">
+                    <div key={item.product_id} className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-800 truncate">{item.product_name}</p>
-                        <p className="text-xs text-slate-400">{item.price.toFixed(2)} {settings.currency} / {item.unit}</p>
+                        <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{item.product_name}</p>
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.price.toFixed(2)} {settings.currency} / {item.unit}</p>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <button onClick={() => changeQty(item.product_id, -1)} className="w-7 h-7 flex items-center justify-center rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+                        <button onClick={() => changeQty(item.product_id, -1)} className="w-7 h-7 flex items-center justify-center rounded-md transition-colors" style={{ backgroundColor: 'var(--bg-hover)', color: 'var(--text-secondary)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-body)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }}>
                           <Minus className="w-3.5 h-3.5" />
                         </button>
-                        <span className="text-sm font-semibold text-slate-700 w-8 text-center">{item.quantity}</span>
-                        <button onClick={() => changeQty(item.product_id, 1)} className="w-7 h-7 flex items-center justify-center rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+                        <span className="text-sm font-semibold w-8 text-center" style={{ color: 'var(--text-primary)' }}>{item.quantity}</span>
+                        <button onClick={() => changeQty(item.product_id, 1)} className="w-7 h-7 flex items-center justify-center rounded-md transition-colors" style={{ backgroundColor: 'var(--bg-hover)', color: 'var(--text-secondary)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-body)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }}>
                           <Plus className="w-3.5 h-3.5" />
                         </button>
                       </div>
-                      <span className="text-sm font-bold text-slate-700 w-16 text-right">{(item.price * item.quantity).toFixed(2)}</span>
-                      <button onClick={() => removeFromCart(item.product_id)} className="w-7 h-7 flex items-center justify-center rounded-md text-slate-300 hover:text-red-500 transition-colors">
+                      <span className="text-sm font-bold w-16 text-right" style={{ color: 'var(--text-primary)' }}>{(item.price * item.quantity).toFixed(2)}</span>
+                      <button onClick={() => removeFromCart(item.product_id)} className="w-7 h-7 flex items-center justify-center rounded-md transition-colors" style={{ color: 'var(--text-muted)' }} onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; }} onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}>
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   ))}
                 </div>
 
-                <div className="border-t border-slate-100 p-4 space-y-3">
+                <div className="border-t p-4 space-y-3" style={{ borderColor: 'var(--border)' }}>
                   {/* Client selector */}
                   <select
                     value={clientId}
                     onChange={(e) => setClientId(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                    style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
+                    onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--c-500)'; }}
+                    onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
                   >
                     <option value="">{t.pos.noClient}</option>
                     {clients.map((c) => (
@@ -219,20 +228,22 @@ export function POS() {
                       <button
                         key={m.key}
                         onClick={() => setPaymentMethod(m.key)}
-                        className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-                          paymentMethod === m.key
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                        }`}
+                        className="flex-1 py-2 rounded-lg text-sm font-medium transition-all"
+                        style={paymentMethod === m.key
+                          ? { backgroundColor: 'var(--c-600)', color: '#fff' }
+                          : { backgroundColor: 'var(--bg-hover)', color: 'var(--text-secondary)' }
+                        }
+                        onMouseEnter={(e) => { if (paymentMethod !== m.key) e.currentTarget.style.backgroundColor = 'var(--bg-body)'; }}
+                        onMouseLeave={(e) => { if (paymentMethod !== m.key) e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }}
                       >
                         {m.label}
                       </button>
                     ))}
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-50">
-                    <span className="text-base font-bold text-slate-800">{t.pos.total}</span>
-                    <span className="text-xl font-bold text-emerald-600">{total.toFixed(2)} {settings.currency}</span>
+                  <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
+                    <span className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>{t.pos.total}</span>
+                    <span className="text-xl font-bold" style={{ color: 'var(--c-600)' }}>{total.toFixed(2)} {settings.currency}</span>
                   </div>
 
                   <Button onClick={checkout} size="lg" className="w-full">

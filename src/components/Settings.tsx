@@ -1,8 +1,16 @@
 import { useState, useRef } from 'react';
 import { useStore } from '../store';
 import { Button, Input, Select } from './ui';
-import { Save, Download, Upload, Trash2, CheckCircle, Globe } from 'lucide-react';
-import type { Settings as SettingsType } from '../types';
+import { Save, Download, Upload, Trash2, CheckCircle, Globe, Palette } from 'lucide-react';
+import type { Settings as SettingsType, Theme } from '../types';
+
+const themes: { key: Theme; gradient: string }[] = [
+  { key: 'emerald', gradient: 'linear-gradient(135deg, #4ade80, #16a34a)' },
+  { key: 'blue', gradient: 'linear-gradient(135deg, #60a5fa, #2563eb)' },
+  { key: 'orange', gradient: 'linear-gradient(135deg, #fb923c, #ea580c)' },
+  { key: 'rose', gradient: 'linear-gradient(135deg, #fb7185, #e11d48)' },
+  { key: 'dark', gradient: 'linear-gradient(135deg, #334155, #0f172a)' },
+];
 
 export function Settings() {
   const { settings, saveSettings, exportData, importData, resetAllData, t } = useStore();
@@ -45,13 +53,21 @@ export function Settings() {
     }
   };
 
+  const themeLabels: Record<Theme, string> = {
+    emerald: t.settings.themeEmerald,
+    blue: t.settings.themeBlue,
+    orange: t.settings.themeOrange,
+    rose: t.settings.themeRose,
+    dark: t.settings.themeDark,
+  };
+
   return (
     <div className="space-y-6 max-w-2xl">
-      <h1 className="text-2xl font-bold text-slate-800">{t.settings.title}</h1>
+      <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{t.settings.title}</h1>
 
       {/* General */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
-        <h2 className="font-bold text-slate-800">{t.settings.general}</h2>
+      <div className="rounded-2xl border p-6 space-y-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+        <h2 className="font-bold" style={{ color: 'var(--text-primary)' }}>{t.settings.general}</h2>
         <Input label={t.settings.shopName} value={form.shop_name} onChange={(v) => setForm({ ...form, shop_name: v })} />
         <div className="grid grid-cols-2 gap-4">
           <Input label={t.settings.currency} value={form.currency} onChange={(v) => setForm({ ...form, currency: v })} />
@@ -60,10 +76,11 @@ export function Settings() {
         <Select
           label={t.settings.language}
           value={form.language}
-          onChange={(v) => setForm({ ...form, language: v as 'fr' | 'en' })}
+          onChange={(v) => setForm({ ...form, language: v as 'fr' | 'en' | 'ar' })}
           options={[
             { value: 'fr', label: 'Français' },
             { value: 'en', label: 'English' },
+            { value: 'ar', label: 'العربية' },
           ]}
         />
         <Input label={t.settings.lowStockThreshold} value={String(form.low_stock_threshold)} onChange={(v) => setForm({ ...form, low_stock_threshold: parseInt(v, 10) || 5 })} type="number" />
@@ -72,29 +89,68 @@ export function Settings() {
             <span className="flex items-center gap-2"><Save className="w-4 h-4" /> {t.settings.save}</span>
           </Button>
           {saved && (
-            <span className="flex items-center gap-1.5 text-sm text-emerald-600 animate-fade-in">
+            <span className="flex items-center gap-1.5 text-sm animate-fade-in" style={{ color: 'var(--c-600)' }}>
               <CheckCircle className="w-4 h-4" /> {t.settings.saved}
             </span>
           )}
         </div>
       </div>
 
-      {/* Data */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
-        <h2 className="font-bold text-slate-800">{t.settings.data}</h2>
+      {/* Appearance / Theme */}
+      <div className="rounded-2xl border p-6 space-y-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+        <h2 className="font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+          <Palette className="w-5 h-5" style={{ color: 'var(--c-600)' }} />
+          {t.settings.appearance}
+        </h2>
+        <div>
+          <label className="block text-sm font-medium mb-2.5" style={{ color: 'var(--text-secondary)' }}>{t.settings.theme}</label>
+          <div className="grid grid-cols-5 gap-3">
+            {themes.map(({ key, gradient }) => (
+              <button
+                key={key}
+                onClick={() => setForm({ ...form, theme: key })}
+                className="flex flex-col items-center gap-2 group"
+              >
+                <div
+                  className={`w-full aspect-square rounded-xl transition-all ${form.theme === key ? 'ring-2 ring-offset-2 scale-105' : 'hover:scale-105'}`}
+                  style={{
+                    background: gradient,
+                    ...(form.theme === key ? { '--tw-ring-color': 'var(--c-500)', 'ringOffsetColor': 'var(--bg-card)' } as React.CSSProperties : {}),
+                  }}
+                />
+                <span
+                  className="text-xs font-medium transition-colors"
+                  style={{ color: form.theme === key ? 'var(--c-600)' : 'var(--text-muted)' }}
+                >
+                  {themeLabels[key]}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center gap-3 pt-2">
+          <Button onClick={handleSave}>
+            <span className="flex items-center gap-2"><Save className="w-4 h-4" /> {t.settings.save}</span>
+          </Button>
+        </div>
+      </div>
 
-        <div className="flex items-center justify-between p-4 border border-slate-200 rounded-xl">
+      {/* Data */}
+      <div className="rounded-2xl border p-6 space-y-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+        <h2 className="font-bold" style={{ color: 'var(--text-primary)' }}>{t.settings.data}</h2>
+
+        <div className="flex items-center justify-between p-4 border rounded-xl" style={{ borderColor: 'var(--border)' }}>
           <div>
-            <p className="text-sm font-medium text-slate-700 flex items-center gap-2"><Download className="w-4 h-4 text-emerald-600" /> {t.settings.exportData}</p>
-            <p className="text-xs text-slate-400 mt-1">{t.settings.exportDesc}</p>
+            <p className="text-sm font-medium flex items-center gap-2" style={{ color: 'var(--text-primary)' }}><Download className="w-4 h-4" style={{ color: 'var(--c-600)' }} /> {t.settings.exportData}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{t.settings.exportDesc}</p>
           </div>
           <Button variant="outline" size="sm" onClick={exportData}>{t.settings.exportData}</Button>
         </div>
 
-        <div className="flex items-center justify-between p-4 border border-slate-200 rounded-xl">
+        <div className="flex items-center justify-between p-4 border rounded-xl" style={{ borderColor: 'var(--border)' }}>
           <div>
-            <p className="text-sm font-medium text-slate-700 flex items-center gap-2"><Upload className="w-4 h-4 text-blue-600" /> {t.settings.importData}</p>
-            <p className="text-xs text-slate-400 mt-1">{t.settings.importDesc}</p>
+            <p className="text-sm font-medium flex items-center gap-2" style={{ color: 'var(--text-primary)' }}><Upload className="w-4 h-4 text-blue-500" /> {t.settings.importData}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{t.settings.importDesc}</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>{t.settings.importData}</Button>
           <input ref={fileRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
@@ -110,9 +166,9 @@ export function Settings() {
       </div>
 
       {/* Language indicator */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 flex items-center gap-3 text-sm text-slate-500">
+      <div className="rounded-2xl border p-4 flex items-center gap-3 text-sm" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
         <Globe className="w-4 h-4" />
-        {form.language === 'fr' ? 'Application en français' : 'Application in English'}
+        {form.language === 'fr' ? 'Application en français' : form.language === 'en' ? 'Application in English' : 'التطبيق باللغة العربية'}
       </div>
     </div>
   );

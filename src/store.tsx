@@ -47,6 +47,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     currency: '€',
     tax_rate: 0,
     language: 'fr',
+    theme: 'emerald',
     low_stock_threshold: 5,
   });
   const [loading, setLoading] = useState(true);
@@ -145,6 +146,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const t = translations[settings.language] as typeof translations.fr;
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', settings.theme);
+    document.documentElement.setAttribute('dir', settings.language === 'ar' ? 'rtl' : 'ltr');
+    document.documentElement.setAttribute('lang', settings.language);
+  }, [settings.theme, settings.language]);
 
   const store: Store = {
     products, sales, clients, settings, loading,

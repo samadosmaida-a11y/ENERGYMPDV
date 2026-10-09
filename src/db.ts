@@ -1,5 +1,6 @@
 import { PGlite } from '@electric-sql/pglite';
 import type { Product, Sale, Client, Settings } from './types';
+import type { Theme } from './types';
 
 let db: PGlite | null = null;
 
@@ -182,6 +183,7 @@ export async function getSettings(): Promise<Settings> {
       currency: '€',
       tax_rate: 0,
       language: 'fr',
+      theme: 'emerald' as Theme,
       low_stock_threshold: 5,
     };
   }
@@ -193,7 +195,8 @@ export async function getSettings(): Promise<Settings> {
     shop_name: map.shop_name || 'NutriShop',
     currency: map.currency || '€',
     tax_rate: parseFloat(map.tax_rate || '0'),
-    language: (map.language as 'fr' | 'en') || 'fr',
+    language: (map.language as 'fr' | 'en' | 'ar') || 'fr',
+    theme: (map.theme as Theme) || 'emerald',
     low_stock_threshold: parseInt(map.low_stock_threshold || '5', 10),
   };
 }
@@ -205,6 +208,7 @@ export async function saveSettings(s: Settings): Promise<void> {
     ['currency', s.currency],
     ['tax_rate', String(s.tax_rate)],
     ['language', s.language],
+    ['theme', s.theme],
     ['low_stock_threshold', String(s.low_stock_threshold)],
   ];
   for (const [key, value] of entries) {

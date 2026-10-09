@@ -28,24 +28,27 @@ export function Clients() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-slate-800">{t.clients.title}</h1>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{t.clients.title}</h1>
         <Button onClick={openAdd}>
           <span className="flex items-center gap-2"><Plus className="w-4 h-4" /> {t.clients.add}</span>
         </Button>
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t.clients.search}
-          className="w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+          className="w-full pl-10 pr-3 py-2.5 border rounded-lg text-sm focus:outline-none"
+          style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--c-500)'; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
         />
       </div>
 
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200">
+        <div className="rounded-2xl border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <EmptyState icon={<Users className="w-12 h-12" />} title={t.clients.noClients} />
         </div>
       ) : (
@@ -53,39 +56,39 @@ export function Clients() {
           {filtered.map((c) => {
             const purchases = getClientPurchases(c.id);
             return (
-              <div key={c.id} className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
+              <div key={c.id} className="rounded-2xl border p-5 hover:shadow-md transition-shadow" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 bg-gradient-to-br from-emerald-400 to-green-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-lg" style={{ background: 'linear-gradient(to bottom right, var(--c-400), var(--c-500))', color: '#fff' }}>
                       {c.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-800">{c.name}</h3>
-                      <p className="text-xs text-emerald-600">{purchases} {t.clients.purchases}</p>
+                      <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{c.name}</h3>
+                      <p className="text-xs" style={{ color: 'var(--c-600)' }}>{purchases} {t.clients.purchases}</p>
                     </div>
                   </div>
                   <div className="flex gap-1">
-                    <button onClick={() => openEdit(c)} className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors">
+                    <button onClick={() => openEdit(c)} className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors" style={{ color: 'var(--text-muted)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}>
                       <Pencil className="w-4 h-4" />
                     </button>
-                    <button onClick={() => { if (confirm(t.clients.confirmDelete)) deleteClient(c.id); }} className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors">
+                    <button onClick={() => { if (confirm(t.clients.confirmDelete)) deleteClient(c.id); }} className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors" style={{ color: 'var(--text-muted)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#fef2f2'; e.currentTarget.style.color = '#dc2626'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}>
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
                 <div className="space-y-1.5 text-sm">
                   {c.phone && (
-                    <div className="flex items-center gap-2 text-slate-500">
+                    <div className="flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
                       <Phone className="w-3.5 h-3.5" /> {c.phone}
                     </div>
                   )}
                   {c.email && (
-                    <div className="flex items-center gap-2 text-slate-500">
+                    <div className="flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
                       <Mail className="w-3.5 h-3.5" /> {c.email}
                     </div>
                   )}
-                  {c.address && <p className="text-slate-400 text-xs mt-2">{c.address}</p>}
-                  {c.notes && <p className="text-slate-400 text-xs italic mt-2">"{c.notes}"</p>}
+                  {c.address && <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>{c.address}</p>}
+                  {c.notes && <p className="text-xs italic mt-2" style={{ color: 'var(--text-muted)' }}>"{c.notes}"</p>}
                 </div>
               </div>
             );
@@ -143,12 +146,15 @@ function ClientModal({ client, onClose, onSave }: {
         </div>
         <Input label={t.clients.address} value={address} onChange={setAddress} placeholder="..." />
         <div>
-          <label className="block text-sm font-medium text-slate-600 mb-1.5">{t.clients.notes}</label>
+          <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>{t.clients.notes}</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
-            className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none"
+            className="w-full px-3.5 py-2.5 border rounded-lg text-sm focus:outline-none resize-none"
+            style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--c-500)'; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
           />
         </div>
         <div className="flex justify-end gap-3 pt-2">

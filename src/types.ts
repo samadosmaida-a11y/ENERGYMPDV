@@ -39,11 +39,14 @@ export interface Client {
   created_at: string;
 }
 
+export type Theme = 'emerald' | 'blue' | 'orange' | 'rose' | 'dark';
+
 export interface Settings {
   shop_name: string;
   currency: string;
   tax_rate: number;
-  language: 'fr' | 'en';
+  language: 'fr' | 'en' | 'ar';
+  theme: Theme;
   low_stock_threshold: number;
 }
 
