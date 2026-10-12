@@ -1,11 +1,25 @@
 import { useState } from 'react';
 import { useStore } from '../store';
-import { Modal, Button, Input, Select, Badge, EmptyState } from './ui';
-import { Plus, Search, Pencil, Trash2, Package } from 'lucide-react';
+import { Modal, Button, Input, Badge, EmptyState } from './ui';
+import { Plus, Search, Pencil, Trash2, Package, CalendarClock } from 'lucide-react';
 import type { Product } from '../types';
 
 function genId() {
   return crypto.randomUUID();
+}
+
+function daysUntil(dateStr: string): number | null {
+  if (!dateStr) return null;
+  const diff = new Date(dateStr).getTime() - Date.now();
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+function getExpiryBadge(p: Product, t: typeof import('../i18n').translations.fr) {
+  const days = daysUntil(p.expiry_date || '');
+  if (days === null) return null;
+  if (days < 0) return <Badge color="red">{t.products.expired}</Badge>;
+  if (days <= 7) return <Badge color="amber">{t.products.expirySoon} ({days} {t.products.daysLeft})</Badge>;
+  return null;
 }
 
 export function Products() {
@@ -23,14 +37,8 @@ export function Products() {
     return matchSearch && matchCat;
   });
 
-  const openAdd = () => {
-    setEditing(null);
-    setModalOpen(true);
-  };
-  const openEdit = (p: Product) => {
-    setEditing(p);
-    setModalOpen(true);
-  };
+  const openAdd = () => { setEditing(null); setModalOpen(true); };
+  const openEdit = (p: Product) => { setEditing(p); setModalOpen(true); };
 
   const getStockBadge = (p: Product) => {
     if (p.stock <= 0) return <Badge color="red">{t.products.outOfStock}</Badge>;
@@ -66,13 +74,9 @@ export function Products() {
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="px-3.5 py-2.5 border rounded-lg text-sm focus:outline-none"
             style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--c-500)'; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
           >
             <option value="">{t.products.allCategories}</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
+            {categories.map((c) => (<option key={c} value={c}>{c}</option>))}
           </select>
         )}
       </div>
@@ -89,49 +93,64 @@ export function Products() {
                 <tr className="border-b" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-hover)' }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>{t.products.name}</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style={{ color: 'var(--text-secondary)' }}>{t.products.category}</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider hidden md:table-cell" style={{ color: 'var(--text-secondary)' }}>{t.products.purchasePrice}</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>{t.products.price}</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>{t.products.stock}</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell" style={{ color: 'var(--text-secondary)' }}>{t.products.expiryDate}</th>
                   <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider hidden md:table-cell" style={{ color: 'var(--text-secondary)' }}>{t.products.actions}</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((p) => (
-                  <tr key={p.id} className="transition-colors" style={{ borderBottom: '1px solid var(--border)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--c-50)' }}>
-                          <Package className="w-4 h-4" style={{ color: 'var(--c-600)' }} />
+                {filtered.map((p) => {
+                  const expiryBadge = getExpiryBadge(p, t);
+                  return (
+                    <tr key={p.id} className="transition-colors" style={{ borderBottom: '1px solid var(--border)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--c-50)' }}>
+                            <Package className="w-4 h-4" style={{ color: 'var(--c-600)' }} />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{p.name}</p>
+                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{p.barcode || p.unit}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{p.name}</p>
-                          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{p.barcode || p.unit}</p>
+                      </td>
+                      <td className="px-4 py-3 hidden sm:table-cell"><Badge color="blue">{p.category}</Badge></td>
+                      <td className="px-4 py-3 text-right text-sm hidden md:table-cell" style={{ color: 'var(--text-secondary)' }}>
+                        {(p.purchase_price || 0).toFixed(2)} {settings.currency}
+                      </td>
+                      <td className="px-4 py-3 text-right text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                        {p.price.toFixed(2)} {settings.currency}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-2 flex-wrap">
+                          <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{p.stock} {p.unit}</span>
+                          {getStockBadge(p)}
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 hidden sm:table-cell">
-                      <Badge color="blue">{p.category}</Badge>
-                    </td>
-                    <td className="px-4 py-3 text-right text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                      {p.price.toFixed(2)} {settings.currency}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{p.stock} {p.unit}</span>
-                        {getStockBadge(p)}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-center gap-1">
-                        <button onClick={() => openEdit(p)} className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors" style={{ color: 'var(--text-muted)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}>
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => { if (confirm(t.products.confirmDelete)) deleteProduct(p.id); }} className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors" style={{ color: 'var(--text-muted)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#fef2f2'; e.currentTarget.style.color = '#dc2626'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}>
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                        {expiryBadge && <div className="mt-1 flex justify-end">{expiryBadge}</div>}
+                      </td>
+                      <td className="px-4 py-3 text-center hidden lg:table-cell">
+                        {p.expiry_date ? (
+                          <div className="flex items-center justify-center gap-1.5">
+                            <CalendarClock className="w-3.5 h-3.5" style={{ color: daysUntil(p.expiry_date)! < 0 ? '#ef4444' : daysUntil(p.expiry_date)! <= 7 ? '#f59e0b' : 'var(--text-muted)' }} />
+                            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{new Date(p.expiry_date).toLocaleDateString()}</span>
+                          </div>
+                        ) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-1">
+                          <button onClick={() => openEdit(p)} className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors" style={{ color: 'var(--text-muted)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}>
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => { if (confirm(t.products.confirmDelete)) deleteProduct(p.id); }} className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors" style={{ color: 'var(--text-muted)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#fef2f2'; e.currentTarget.style.color = '#dc2626'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}>
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -144,11 +163,8 @@ export function Products() {
           categories={categories}
           onClose={() => setModalOpen(false)}
           onSave={async (p) => {
-            if (editing) {
-              await updateProduct(p);
-            } else {
-              await addProduct(p);
-            }
+            if (editing) await updateProduct(p);
+            else await addProduct(p);
             setModalOpen(false);
           }}
         />
@@ -166,11 +182,13 @@ function ProductModal({ product, categories, onClose, onSave }: {
   const { t } = useStore();
   const [name, setName] = useState(product?.name || '');
   const [category, setCategory] = useState(product?.category || 'General');
+  const [purchasePrice, setPurchasePrice] = useState(String(product?.purchase_price || ''));
   const [price, setPrice] = useState(String(product?.price || ''));
   const [stock, setStock] = useState(String(product?.stock || ''));
   const [unit, setUnit] = useState(product?.unit || 'pcs');
   const [barcode, setBarcode] = useState(product?.barcode || '');
   const [minStock, setMinStock] = useState(String(product?.min_stock || '5'));
+  const [expiryDate, setExpiryDate] = useState(product?.expiry_date || '');
 
   const handleSave = () => {
     if (!name.trim()) return;
@@ -178,11 +196,13 @@ function ProductModal({ product, categories, onClose, onSave }: {
       id: product?.id || genId(),
       name: name.trim(),
       category: category.trim() || 'General',
+      purchase_price: parseFloat(purchasePrice) || 0,
       price: parseFloat(price) || 0,
       stock: parseFloat(stock) || 0,
       unit: unit.trim() || 'pcs',
       barcode: barcode.trim(),
       min_stock: parseFloat(minStock) || 5,
+      expiry_date: expiryDate,
       created_at: product?.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
@@ -195,28 +215,24 @@ function ProductModal({ product, categories, onClose, onSave }: {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>{t.products.category}</label>
-            <input
-              list="categories-list"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+            <input list="categories-list" value={category} onChange={(e) => setCategory(e.target.value)}
               className="w-full px-3.5 py-2.5 border rounded-lg text-sm focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
-              onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--c-500)'; }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
-            />
-            <datalist id="categories-list">
-              {categories.map((c) => <option key={c} value={c} />)}
-            </datalist>
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }} />
+            <datalist id="categories-list">{categories.map((c) => <option key={c} value={c} />)}</datalist>
           </div>
           <Input label={t.products.unit} value={unit} onChange={setUnit} placeholder="pcs, kg, L..." />
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <Input label={`${t.products.price} (${t.common.currency})`} value={price} onChange={setPrice} type="number" placeholder="0.00" />
+          <Input label={`${t.products.purchasePrice}`} value={purchasePrice} onChange={setPurchasePrice} type="number" placeholder="0.00" />
+          <Input label={`${t.products.price}`} value={price} onChange={setPrice} type="number" placeholder="0.00" />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
           <Input label={t.products.stock} value={stock} onChange={setStock} type="number" placeholder="0" />
+          <Input label={t.products.minStock} value={minStock} onChange={setMinStock} type="number" placeholder="5" />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <Input label={t.products.barcode} value={barcode} onChange={setBarcode} placeholder="..." />
-          <Input label={t.products.minStock} value={minStock} onChange={setMinStock} type="number" placeholder="5" />
+          <Input label={t.products.expiryDate} value={expiryDate} onChange={setExpiryDate} type="date" />
         </div>
         <div className="flex justify-end gap-3 pt-2">
           <Button variant="secondary" onClick={onClose}>{t.products.cancel}</Button>

@@ -2,11 +2,13 @@ export interface Product {
   id: string;
   name: string;
   category: string;
+  purchase_price: number;
   price: number;
   stock: number;
   unit: string;
   barcode?: string;
   min_stock: number;
+  expiry_date?: string;
   created_at: string;
   updated_at: string;
 }

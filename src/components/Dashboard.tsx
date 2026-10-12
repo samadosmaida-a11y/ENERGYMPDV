@@ -1,5 +1,5 @@
 import { useStore } from '../store';
-import { Package, Receipt, Users, TrendingUp, AlertTriangle, ShoppingCart } from 'lucide-react';
+import { Package, Receipt, Users, TrendingUp, AlertTriangle, ShoppingCart, CalendarClock } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 function StatCard({ icon, label, value, bg }: { icon: ReactNode; label: string; value: string; bg: string }) {
@@ -18,6 +18,11 @@ function StatCard({ icon, label, value, bg }: { icon: ReactNode; label: string; 
   );
 }
 
+function daysUntil(dateStr: string): number | null {
+  if (!dateStr) return null;
+  return Math.ceil((new Date(dateStr).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+}
+
 export function Dashboard() {
   const { products, sales, clients, settings, t, setPage } = useStore();
 
@@ -25,6 +30,9 @@ export function Dashboard() {
   const todaySales = sales.filter((s) => new Date(s.created_at).toDateString() === today);
   const totalRevenue = sales.reduce((sum, s) => sum + s.total, 0);
   const lowStockProducts = products.filter((p) => p.stock <= (p.min_stock || settings.low_stock_threshold));
+  const expiringProducts = products
+    .filter((p) => { const d = daysUntil(p.expiry_date || ''); return d !== null && d >= 0 && d <= 7; })
+    .sort((a, b) => (daysUntil(a.expiry_date || '')! - daysUntil(b.expiry_date || '')!));
 
   const recentSales = sales.slice(0, 5);
   const fmt = (n: number) => `${n.toFixed(2)} ${settings.currency}`;
@@ -43,14 +51,12 @@ export function Dashboard() {
         <StatCard icon={<Users className="w-5 h-5 text-amber-600" />} label={t.dashboard.totalClients} value={String(clients.length)} bg="#fef3c7" />
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-3 gap-6">
         {/* Recent Sales */}
         <div className="rounded-2xl border p-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold" style={{ color: 'var(--text-primary)' }}>{t.dashboard.recentSales}</h2>
-            <button onClick={() => setPage('sales')} className="text-sm font-medium" style={{ color: 'var(--c-600)' }}>
-              {t.dashboard.viewAll}
-            </button>
+            <button onClick={() => setPage('sales')} className="text-sm font-medium" style={{ color: 'var(--c-600)' }}>{t.dashboard.viewAll}</button>
           </div>
           {recentSales.length === 0 ? (
             <p className="text-sm py-8 text-center" style={{ color: 'var(--text-muted)' }}>{t.dashboard.noRecentSales}</p>
@@ -63,12 +69,8 @@ export function Dashboard() {
                       <Receipt className="w-4 h-4" style={{ color: 'var(--c-600)' }} />
                     </div>
                     <div>
-                      <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                        {sale.items.length} {sale.items.length > 1 ? t.sales.items : t.sales.item}
-                      </p>
-                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                        {new Date(sale.created_at).toLocaleDateString()} {new Date(sale.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
+                      <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{sale.items.length} {sale.items.length > 1 ? t.sales.items : t.sales.item}</p>
+                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{new Date(sale.created_at).toLocaleDateString()} {new Date(sale.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                   </div>
                   <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>{fmt(sale.total)}</span>
@@ -82,9 +84,7 @@ export function Dashboard() {
         <div className="rounded-2xl border p-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold" style={{ color: 'var(--text-primary)' }}>{t.dashboard.lowStockProducts}</h2>
-            <button onClick={() => setPage('products')} className="text-sm font-medium" style={{ color: 'var(--c-600)' }}>
-              {t.dashboard.viewAll}
-            </button>
+            <button onClick={() => setPage('products')} className="text-sm font-medium" style={{ color: 'var(--c-600)' }}>{t.dashboard.viewAll}</button>
           </div>
           {lowStockProducts.length === 0 ? (
             <p className="text-sm py-8 text-center" style={{ color: 'var(--text-muted)' }}>{t.dashboard.noLowStock}</p>
@@ -101,11 +101,40 @@ export function Dashboard() {
                       <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{p.category}</p>
                     </div>
                   </div>
-                  <span className={`text-sm font-semibold ${p.stock === 0 ? 'text-red-600' : 'text-amber-600'}`}>
-                    {p.stock} {p.unit}
-                  </span>
+                  <span className={`text-sm font-semibold ${p.stock === 0 ? 'text-red-600' : 'text-amber-600'}`}>{p.stock} {p.unit}</span>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+
+        {/* Expiring Soon */}
+        <div className="rounded-2xl border p-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-bold" style={{ color: 'var(--text-primary)' }}>{t.dashboard.expiringSoon}</h2>
+            <button onClick={() => setPage('products')} className="text-sm font-medium" style={{ color: 'var(--c-600)' }}>{t.dashboard.viewAll}</button>
+          </div>
+          {expiringProducts.length === 0 ? (
+            <p className="text-sm py-8 text-center" style={{ color: 'var(--text-muted)' }}>{t.dashboard.noExpiring}</p>
+          ) : (
+            <div className="space-y-2">
+              {expiringProducts.slice(0, 5).map((p) => {
+                const days = daysUntil(p.expiry_date || '')!;
+                return (
+                  <div key={p.id} className="flex items-center justify-between py-2.5 last:border-0" style={{ borderBottom: '1px solid var(--border)' }}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: days <= 3 ? '#fee2e2' : '#fef3c7' }}>
+                        <CalendarClock className={`w-4 h-4 ${days <= 3 ? 'text-red-600' : 'text-amber-600'}`} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{p.name}</p>
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{new Date(p.expiry_date!).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <span className={`text-sm font-semibold ${days <= 3 ? 'text-red-600' : 'text-amber-600'}`}>{days} {t.products.daysLeft}</span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
